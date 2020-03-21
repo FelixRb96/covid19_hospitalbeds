@@ -23,7 +23,8 @@ if(!require(shiny)) install.packages("shiny", repos = "http://cran.us.r-project.
 if(!require(shinyWidgets)) install.packages("shinyWidgets", repos = "http://cran.us.r-project.org")
 if(!require(shinydashboard)) install.packages("shinydashboard", repos = "http://cran.us.r-project.org")
 if(!require(shinythemes)) install.packages("shinythemes", repos = "http://cran.us.r-project.org")
-if(!require(glue)) install.packages("shinythemes", repos = "http://cran.us.r-project.org")
+if(!require(glue)) install.packages("glue", repos = "http://cran.us.r-project.org")
+if(!require(RSQLite)) install.packages("RSQLite", repos = "http://cran.us.r-project.org")
 
 # update data with automated script
 #source("jhu_data_update.R")
