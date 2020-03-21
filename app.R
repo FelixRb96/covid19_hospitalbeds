@@ -358,7 +358,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                                                    type="text/javascript"),
                                        includeScript("returnClick.js")
                              ),
-                             HTML('<h1>Bitte loggen Sie sich mit Ihrem Krankenhauszugang ein.</h1>'),
+                             uiOutput("first_message"),
                              shinyauthr::loginUI("login"),
                              uiOutput("user_table"),
                              uiOutput("testUI"),
@@ -616,6 +616,13 @@ server = function(input, output) {
     }
   })
   
+  output$first_message <- renderUI({
+    # only show pre-login
+    if(credentials()$user_auth) return(NULL)
+    
+    HTML('<h1>Bitte loggen Sie sich mit Ihrem Krankenhauszugang ein.</h1>')
+  })
+  
   output$user_table <- renderUI({
     # only show pre-login
     if(credentials()$user_auth) return(NULL)
@@ -640,12 +647,28 @@ server = function(input, output) {
     
   })
   
-  output$welcome <- renderText({
+  # output$welcome <- renderText({
+  #   req(credentials()$user_auth)
+  #   
+  #   glue("Sie sind eingeloggt als: {user_info()$name}")
+  # })
+  
+  output$testUI <- renderUI({
     req(credentials()$user_auth)
     
-    glue("Sie sind eingeloggt als: {user_info()$name}")
+    fluidRow(
+      column(
+        width = 12,
+        tags$h2(glue("Willkommen!
+                     Sie sind angemeldet als: {user_info()$name}.
+                     Ihre Zugangskategorie ist: {user_info()$permissions}.")),
+        box(width = NULL, status = "primary",
+            title = ifelse(user_info()$permissions %in% c('krankenhaus'), "Daten hochladen:", "Fehler"),
+            DT::renderDT(user_data(), options = list(scrollX = TRUE))
+        )
+      )
+    )
   })
-  
 }
 
 #runApp(shinyApp(ui, server), launch.browser = TRUE)

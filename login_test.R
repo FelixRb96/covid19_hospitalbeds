@@ -79,7 +79,7 @@ server <- function(input, output, session) {
     req(credentials()$user_auth)
     
     if (user_info()$permissions == "admin") {
-      dplyr::starwars[,1:10]
+      iris
     } else if (user_info()$permissions == "standard") {
       dplyr::storms[,1:11]
     }
