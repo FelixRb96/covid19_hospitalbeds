@@ -37,7 +37,7 @@ ebola_col = "#016c59"
 
 # import data
 cv_cases = read.csv("input_data/coronavirus.csv")
-sars_cases = read.csv("input_data/sars.csv")
+sars_cases = read.csv("input_data/sars.csv", col.names = c("country","country_group", "date","cases","deaths"))
 countries = read.csv("input_data/countries_codes_and_coordinates.csv")
 ebola_cases = read.csv("input_data/ebola.csv")
 h1n1_cases = read.csv("input_data/h1n1.csv")
@@ -112,7 +112,7 @@ sars_max_date = max(sars_cases$date)
 sars_max_date_clean = format(as.POSIXct(sars_max_date),"%d %B %Y")
 
 # merge sars data with country data and extract key summary variables
-sars_cases = merge(sars_cases %>% mutate(country = sars_cases$"ï..country") %>% select(-`ï..country`), countries, by = "country")
+sars_cases = merge(sars_cases, countries, by = "country")
 sars_cases = sars_cases[order(sars_cases$date),]
 sars_cases$per100k = as.numeric(format(round(sars_cases$cases/(sars_cases$population/100000),1),nsmall=1))
 sars_final = subset(sars_cases, date==sars_max_date) 
