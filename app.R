@@ -318,6 +318,34 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                           )
                  ),
                   tabPanel("Daten hinzufügen",
+                           
+                           dashboardHeader(title = "shinyauthr",
+                                           tags$li(class = "dropdown", style = "padding: 8px;",
+                                                   shinyauthr::logoutUI("logout")),
+                                           tags$li(class = "dropdown", 
+                                                   tags$a(icon("github"), 
+                                                          href = "https://github.com/paulc91/shinyauthr",
+                                                          title = "See the code on github"))
+                           ),
+                           
+                           dashboardSidebar(collapsed = FALSE, 
+                                            div(textOutput("Willkommen!"), style = "padding: 20px")
+                           ),
+                           
+                           dashboardBody(
+                             shinyjs::useShinyjs(),
+                             tags$head(tags$style(".table{margin: 0 auto;}"),
+                                       tags$script(src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.16/iframeResizer.contentWindow.min.js",
+                                                   type="text/javascript"),
+                                       includeScript("returnClick.js")
+                             ),
+                             HTML('<h1>Bitte loggen Sie sich mit Ihrem Krankenhauszugang ein.</h1>'),
+                             shinyauthr::loginUI("login"),
+                             uiOutput("user_table"),
+                             uiOutput("testUI"),
+                             HTML('<div data-iframe-height></div>')
+                           ),
+                              
                          numericInput("maxrows", "Rows to show", 25),
                          verbatimTextOutput("rawtable"),
                          downloadButton("downloadCsv", "Download as CSV"),tags$br(),tags$br(),
