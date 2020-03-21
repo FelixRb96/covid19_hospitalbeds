@@ -357,7 +357,7 @@ comparison_plot = function(epi_comp, comparison) {
 ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                  "COVID-19 tracker", id="nav",
                  
-                 tabPanel("COVID-19 mapper",
+                 tabPanel("Krankenhausbetten Deutschland",
                           div(class="outer",
                               tags$head(includeCSS("styles.css")),
                               leafletOutput("mymap", width="100%", height="100%"),
@@ -400,7 +400,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                           )
                  ),
                  
-                 tabPanel("Country plots",
+                 tabPanel("Bundesländer Zahlen",
                           
                           sidebarLayout(
                             sidebarPanel(
@@ -427,62 +427,15 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                             )
                           )
                  ),
-                 
-                 tabPanel("SARS mapper",
-                          div(class="outer",
-                              tags$head(includeCSS("styles.css")),
-                              leafletOutput("sars_map", width="100%", height="100%"),
-                              
-                              absolutePanel(id = "controls", class = "panel panel-default",
-                                            top = 80, left = 20, width = 250, fixed=TRUE,
-                                            draggable = TRUE, height = "auto",
-                                            
-                                            h3(textOutput("sars_reactive_case_count"), align = "right"),
-                                            h4(textOutput("sars_reactive_death_count"), align = "right"),
-                                            h6(textOutput("sars_clean_date_reactive"), align = "right"),
-                                            h6(textOutput("sars_reactive_country_count"), align = "right"),
-                                            plotOutput("sars_epi_curve", height="130px", width="100%"),
-                                            plotOutput("sars_cumulative_plot", height="130px", width="100%"),
-                                            span(("The final count appears to decrease as several cases initially classified as SARS were later re-assigned."),align = "left", style = "font-size:80%"),#tags$br(),
-                                            span(("Circles show confirmed cases for COVID, SARS, and Ebola, and estimated deaths for H1N1."),align = "left", style = "font-size:80%"),
-                                           
-                                            sliderTextInput("sars_plot_date",
-                                                            label = h5("Select mapping date"),
-                                                            choices = format(unique(sars_cases$date), "%d %b %y"),
-                                                            selected = format(sars_max_date, "%d %b %y"),
-                                                            grid = TRUE,
-                                                            animate=animationOptions(interval = 2000, loop = FALSE))
-                              ),
-                              
-                              absolutePanel(id = "logo", class = "card", bottom = 20, left = 60, width = 80, fixed=TRUE, draggable = FALSE, height = "auto",
-                                            tags$a(href='https://www.lshtm.ac.uk', tags$img(src='lshtm_dark.png',height='40',width='80'))),
-                              
-                              absolutePanel(id = "logo", class = "card", bottom = 20, left = 20, width = 30, fixed=TRUE, draggable = FALSE, height = "auto",
-                                            actionButton("twitter_share", label = "", icon = icon("twitter"),style='padding:5px',
-                                                         onclick = sprintf("window.open('%s')", 
-                                                                           "https://twitter.com/intent/tweet?text=%20@LSHTM_Vaccines%20outbreak%20mapper&url=https://bit.ly/2uBvnds&hashtags=coronavirus")))
-                          )
+                  tabPanel("Daten hinzufügen",
+                         numericInput("maxrows", "Rows to show", 25),
+                         verbatimTextOutput("rawtable"),
+                         downloadButton("downloadCsv", "Download as CSV"),tags$br(),tags$br(),
+                         "Adapted from timeline data published by ", tags$a(href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series", 
+                                                                            "Johns Hopkins Center for Systems Science and Engineering.")
                  ),
-                 
-                 tabPanel("Outbreak comparisons",
-                          
-                          sidebarLayout(
-                            sidebarPanel(
-                              radioButtons("comparison_metric", h3("Select comparison:"),
-                                           c("Cases" = "cases",
-                                             "Deaths" = "deaths",
-                                             "Countries/regions affected" = "countries",
-                                             "Case fatality rate" = "cfr")),
-                              textOutput("epi_notes_1"),
-                              textOutput("epi_notes_2"),
-                              textOutput("epi_notes_3")
-                            ),
-                            
-                            mainPanel(plotlyOutput("comparison_plot"), width = 6)
-                          )
-                 ),
-                 
-                 tabPanel("About this site",
+                           
+                 tabPanel("Über diese Webseite",
                           tags$div(
                             tags$h4("Last update"), 
                             h6(paste0(update)),
@@ -525,14 +478,6 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                             "edward.parker@lshtm.ac.uk",tags$br(),tags$br(),
                             tags$img(src = "vac_dark.png", width = "150px", height = "75px"), tags$img(src = "lshtm_dark.png", width = "150px", height = "75px")
                           )
-                 ),
-                 
-                 tabPanel("Data",
-                         numericInput("maxrows", "Rows to show", 25),
-                         verbatimTextOutput("rawtable"),
-                         downloadButton("downloadCsv", "Download as CSV"),tags$br(),tags$br(),
-                         "Adapted from timeline data published by ", tags$a(href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series", 
-                                                                            "Johns Hopkins Center for Systems Science and Engineering.")
                  )
 )
 
