@@ -247,11 +247,11 @@ comparison_plot = function(epi_comp, comparison) {
 # ----------------------------------------------------------------------- #
 
 user_base <- data_frame(
-  user = c("RT_1", "TÜ_2"),
-  password = c("pass1", "pass2"), 
-  password_hash = sapply(c("pass1", "pass2"), sodium::password_store), 
-  permissions = c("krankenhaus", "standard"),
-  name = c("Klinikum Reutlingen", "Tübinger Universitätsklinikum")
+  user = c("RT_1", "TÜ_2", "bob"),
+  password = c("pass1", "pass2", "123"), 
+  password_hash = sapply(c("pass1", "pass2", "123"), sodium::password_store), 
+  permissions = c("krankenhaus", "krankenhaus", "standard"),
+  name = c("Klinikum Reutlingen", "Tuebinger Universitätsklinikum", "Besorgter Buerger")
 )
 
 
@@ -309,7 +309,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                           )
                  ),
                  
-                 tabPanel("Bundesländer Zahlen",
+                 tabPanel("Bundeslaender Zahlen",
                           
                           sidebarLayout(
                             sidebarPanel(
@@ -336,7 +336,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                             )
                           )
                  ),
-                  tabPanel("Daten hinzufügen",
+                  tabPanel("Daten hinzufuegen",
                            
                            dashboardHeader(title = "#WirVsVirus",
                                            tags$li(class = "dropdown", style = "padding: 8px;",
@@ -369,7 +369,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                          # verbatimTextOutput("rawtable"),
                  ),
                            
-                 tabPanel("Über diese Webseite",
+                 tabPanel("Ueber diese Webseite",
                           tags$div(
                             tags$h4("Last update"), 
                             h6(paste0(update)),
