@@ -247,11 +247,11 @@ comparison_plot = function(epi_comp, comparison) {
 # ----------------------------------------------------------------------- #
 
 user_base <- data_frame(
-  user = c("RT_1", "TÜ_2", "bob"),
+  user = c("RT_1", "TUE_2", "bob"),
   password = c("pass1", "pass2", "123"), 
   password_hash = sapply(c("pass1", "pass2", "123"), sodium::password_store), 
   permissions = c("krankenhaus", "krankenhaus", "standard"),
-  name = c("Klinikum Reutlingen", "Tuebinger Universitätsklinikum", "Besorgter Buerger")
+  name = c("Klinikum Reutlingen", "Tuebinger Universitaetsklinikum", "Besorgter Buerger")
 )
 
 
