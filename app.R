@@ -346,11 +346,8 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                              HTML('<div data-iframe-height></div>')
                            ),
                               
-                         numericInput("maxrows", "Rows to show", 25),
-                         verbatimTextOutput("rawtable"),
-                         downloadButton("downloadCsv", "Download as CSV"),tags$br(),tags$br(),
-                         "Adapted from timeline data published by ", tags$a(href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_time_series", 
-                                                                            "Johns Hopkins Center for Systems Science and Engineering.")
+                         # numericInput("maxrows", "Rows to show", 25),
+                         # verbatimTextOutput("rawtable"),
                  ),
                            
                  tabPanel("Über diese Webseite",
