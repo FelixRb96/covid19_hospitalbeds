@@ -353,6 +353,25 @@ comparison_plot = function(epi_comp, comparison) {
   ggplotly(p1 + coord_flip(), tooltip = c("text")) %>% layout(showlegend = FALSE)
 }
 
+# ----------------------------------------------------------------------- #
+
+user_base <- data_frame(
+  user = c("RT_1", "TÜ_2"),
+  password = c("pass1", "pass2"), 
+  password_hash = sapply(c("pass1", "pass2"), sodium::password_store), 
+  permissions = c("krankenhaus", "standard"),
+  name = c("Klinikum Reutlingen", "Tübinger Universitätsklinikum")
+)
+
+
+# ----------------------------------------------------------------------- #
+#
+# DER SHINY-TEIL
+#
+
+
+
+
 # create Shiny ui
 ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                  "COVID-19 tracker", id="nav",
@@ -400,7 +419,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                           )
                  ),
                  
-                 tabPanel("BundeslÃ¤nder Zahlen",
+                 tabPanel("Bundesländer Zahlen",
                           
                           sidebarLayout(
                             sidebarPanel(
@@ -427,15 +446,15 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                             )
                           )
                  ),
-                  tabPanel("Daten hinzufÃ¼gen",
+                  tabPanel("Daten hinzufügen",
                            
-                           dashboardHeader(title = "shinyauthr",
+                           dashboardHeader(title = "#WirVsVirus",
                                            tags$li(class = "dropdown", style = "padding: 8px;",
                                                    shinyauthr::logoutUI("logout")),
                                            tags$li(class = "dropdown", 
                                                    tags$a(icon("github"), 
-                                                          href = "https://github.com/paulc91/shinyauthr",
-                                                          title = "See the code on github"))
+                                                          href = "https://github.com/FelixRb96/covid19_hospitalbeds",
+                                                          title = "Hackathon"))
                            ),
                            
                            dashboardSidebar(collapsed = FALSE, 
@@ -463,7 +482,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                                                                             "Johns Hopkins Center for Systems Science and Engineering.")
                  ),
                            
-                 tabPanel("Ãœber diese Webseite",
+                 tabPanel("Über diese Webseite",
                           tags$div(
                             tags$h4("Last update"), 
                             h6(paste0(update)),
@@ -805,6 +824,56 @@ server = function(input, output) {
                                      recovered, new_recovered, active_cases, 
                                      per100k, newper100k, activeper100k)), input$maxrows), row.names = FALSE)
     options(orig)
+  })
+  
+  ## ---------------- ##
+  ## Log-in ##
+  
+  credentials <- callModule(shinyauthr::login, "login", 
+                            data = user_base,
+                            user_col = user,
+                            pwd_col = password_hash,
+                            sodium_hashed = TRUE,
+                            log_out = reactive(logout_init()))
+  
+  logout_init <- callModule(shinyauthr::logout, "logout", reactive(credentials()$user_auth))
+  
+  observe({
+    if(credentials()$user_auth) {
+      shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
+    } else {
+      shinyjs::addClass(selector = "body", class = "sidebar-collapse")
+    }
+  })
+  
+  output$user_table <- renderUI({
+    # only show pre-login
+    if(credentials()$user_auth) return(NULL)
+    
+    tagList(
+      tags$p("Zum Testen:", class = "text-center"),
+      
+      renderTable({user_base[, -3]})
+    )
+  })
+  
+  user_info <- reactive({credentials()$info})
+  
+  user_data <- reactive({
+    req(credentials()$user_auth)
+    
+    if (user_info()$permissions == "krankenhaus") {
+      iris
+    } else if (user_info()$permissions == "standard") {
+      iris[1:5,]
+    }
+    
+  })
+  
+  output$welcome <- renderText({
+    req(credentials()$user_auth)
+    
+    glue("Sie sind eingeloggt als: {user_info()$name}")
   })
   
 }
