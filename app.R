@@ -112,7 +112,7 @@ sars_max_date = max(sars_cases$date)
 sars_max_date_clean = format(as.POSIXct(sars_max_date),"%d %B %Y")
 
 # merge sars data with country data and extract key summary variables
-sars_cases = merge(sars_cases, countries, by = "country")
+sars_cases = merge(sars_cases %>% mutate(country = sars_cases$"ï..country") %>% select(-`ï..country`), countries, by = "country")
 sars_cases = sars_cases[order(sars_cases$date),]
 sars_cases$per100k = as.numeric(format(round(sars_cases$cases/(sars_cases$population/100000),1),nsmall=1))
 sars_final = subset(sars_cases, date==sars_max_date) 

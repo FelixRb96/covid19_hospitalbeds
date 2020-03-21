@@ -68,6 +68,7 @@ countries = read.csv("input_data/countries_codes_and_coordinates.csv")
 
 # check all jhu country names have corresponding country data
 jhu_country_list = names(jhu_merge)[grepl("_cases", names(jhu_merge))] %>% str_replace_all(., "_cases", "") 
+jhu_country_list[jhu_country_list=="CaboVerde"] = "CapeVerde" 
 if (all(jhu_country_list %in% countries$jhu_ID)==FALSE) {
   stop(paste0("Error: mapping data lacking for the following countries: ",jhu_country_list[(jhu_country_list %in% countries$jhu_ID)==FALSE]))
 }
@@ -158,3 +159,4 @@ collated_data$last_update[nrow(collated_data)] = paste(format(as.POSIXlt(Sys.tim
 # save file
 write.csv(collated_data, "input_data/coronavirus.csv", row.names=F)
 rm(list = ls())
+
