@@ -23,6 +23,7 @@ if(!require(shiny)) install.packages("shiny", repos = "http://cran.us.r-project.
 if(!require(shinyWidgets)) install.packages("shinyWidgets", repos = "http://cran.us.r-project.org")
 if(!require(shinydashboard)) install.packages("shinydashboard", repos = "http://cran.us.r-project.org")
 if(!require(shinythemes)) install.packages("shinythemes", repos = "http://cran.us.r-project.org")
+if(!require(glue)) install.packages("shinythemes", repos = "http://cran.us.r-project.org")
 
 # update data with automated script
 #source("jhu_data_update.R")
@@ -642,7 +643,7 @@ server = function(input, output) {
     if (user_info()$permissions == "krankenhaus") {
       iris
     } else if (user_info()$permissions == "standard") {
-      iris[1:5,]
+      matrix("Sie haben keinen Zugang! Zu unwichtig.", 1, 1)
     }
     
   })
