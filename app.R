@@ -525,13 +525,9 @@ server = function(input, output) {
                 # label = sprintf("<strong>%s (active)</strong><br/>Confirmed cases: %g<br/>Cases per 100,000: %g<br/><i><small>Excludes individuals known to have<br/>recovered (%g) or died (%g).</small></i>", reactive_db()$country, reactive_db()$active_cases, reactive_db()$activeper100k, reactive_db()$recovered, reactive_db()$deaths) %>% lapply(htmltools::HTML),
                  labelOptions = labelOptions(
                    style = list("font-weight" = "normal", padding = "3px 8px", "color" = covid_col),
-                   textsize = "15px", direction = "auto")) # %>%
+                   textsize = "15px", direction = "auto")) %>%
 
-      # addCircles(data = reactive_(), lat = ~ lat, lng = ~ lon, weight = 1, radius = ~(Anzahl.Betten)^(1/4)*2.5e4*penalty, 
-                 # fillOpacity = 0.1, color = betten_col, group = "Anzahl Betten",
-                 # labelOptions = labelOptions(
-                   # style = list("font-weight" = "normal", padding = "3px 8px", "color" = betten_col),
-                   # textsize = "15px", direction = "auto")) 
+      addCircles(data = reactive_betten_db(), lat = ~ lat, lng = ~ lon, weight = 1, radius = ~(Anzahl.Betten)^(1/4)*2.5e4, fillOpacity = 0.1, color = betten_col, group = "Anzahl Betten", labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px", "color" = betten_col), textsize = "15px", direction = "auto")) 
 
   })
   
