@@ -370,6 +370,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                              uiOutput("krankenhaus_suchvorschlag"),
                              uiOutput("krankenhaus_option_neu"),
                              uiOutput("krankenhaus_option_aendern"),
+                             uiOutput("krankenhaus_datenfeld_eingabe"),
                              HTML('<div data-iframe-height></div>')
                            ),
                               
@@ -615,8 +616,8 @@ server = function(input, output) {
   is_loggedin <- reactive({credentials()$user_auth})
   rv <- reactiveValues(krankenhaus_db = krankenhaus_db, krankenhaus_plz_checked = FALSE,
                        subdata = NULL,
-                       input_request_neu = FALSE, input_request_aendern = FALSE,
-                       input_submit = FALSE)
+                       zeige_eingabefeld = FALSE,
+                       input_submit = FALSE, updater = FALSE)
   
   observe({
     if(credentials()$user_auth) {
@@ -708,6 +709,14 @@ server = function(input, output) {
     else rv$subdata <- subdata
   })
   
+  # second event handler when data editing is submitted (see below).
+  observeEvent(rv$updater, {
+    temp <- rv$krankenhaus_db
+    subdata <- temp[temp$PLZ == input$krankenhaus_plz, ]
+    if(nrow(subdata) == 0) rv$subdata <- data.frame("kein passender Eintrag gefunden")
+    else rv$subdata <- subdata
+  })
+  
   output$krankenhaus_suchvorschlag <- renderUI({
     req(credentials()$user_auth)
     
@@ -722,27 +731,26 @@ server = function(input, output) {
   })
   
   output$krankenhaus_option_neu <- renderUI({
-    if(!rv$krankenhaus_plz_checked | rv$input_request_aendern) return(NULL)
+    if(!rv$krankenhaus_plz_checked) return(NULL)
     
     fluidRow(
       actionButton("krankenhaus_neu", "Neuer Eintrag"),
-      # rv$input_isnew <- ifelse()
     )
-    rv$input_request_new <- TRUE
   })
   
   output$krankenhaus_option_aendern <- renderUI({
-    if(!rv$krankenhaus_plz_checked | rv$input_request_neu) return(NULL)
+    if(!rv$krankenhaus_plz_checked) return(NULL)
     
     fluidRow(
       actionButton("krankenhaus_aendern", "Eintrag aendern"),
-      # rv$input_isnew <- ifelse()
     )
-    rv$input_request_aendern <- TRUE
   })
-
-  output$datenfeld_neu <- renderUI({
-    if(!rv$input_request_neu & !rv$input_request_aendern) return(NULL)
+  
+  observeEvent(input$krankenhaus_neu, {rv$zeige_eingabefeld <- TRUE})
+  observeEvent(input$krankenhaus_aendern, {rv$zeige_eingabefeld <- TRUE})
+  
+  output$krankenhaus_datenfeld_eingabe <- renderUI({
+    if(!rv$zeige_eingabefeld) return(NULL)
     
     fluidRow(
       dateInput("datum", "Datum der Daten", value = Sys.Date(), format = "dd.mm.yyyy"),
@@ -754,18 +762,36 @@ server = function(input, output) {
   })
   
   observeEvent(input$input_submit, {
-    if(rv$input_request_neu) {
-      db_updated <- rbind(rv$krankenhaus_db, as.data.frame(list(input$krankenhaus_name, 99, input$krankenhaus_plz, input$betten_normal,
-                           input$betten_intensiv, input$bestand_schutz, 0, 0)))
-    } else if(rv$input$request_aendern) {
-      index <- which(input$krankenhaus_plz == db$PLZ && grepl(input$krankenhaus_name, tolower(db$Krankenhausname)))
-      index <- index[1] # wahle immer den ersten vorschlag, vielleicht später verbessern
-      db_updated <- db
-      db_updated[index, ] <- rbind(rv$krankenhaus_db, as.data.frame(list(input$krankenhaus_name, 99, input$krankenhaus_plz, input$betten_normal,
-                                   input$betten_intensiv, input$bestand_schutz, 0, 0)))
+    
+    input_plz <- input$krankenhaus_plz
+    # temp <- as.data.frame(list(input$krankenhaus_name, 99, input_plz, input$betten_normal,
+    #                            input$betten_intensiv,
+    #                            PLZ_db[PLZ_db[,1] == input_plz, 3], PLZ_db[PLZ_db[,1] == input_plz, 4],
+    #                            input$bestand_schutz), stringsAsFactors = FALSE)
+    temp <- as.data.frame(list(input$krankenhaus_name, 99, input_plz, input$betten_normal,
+                               input$betten_intensiv,
+                               0, 0,
+                               100), stringsAsFactors = FALSE)
+    colnames(temp) <- colnames(rv$krankenhaus_db)
+    
+    if(input$krankenhaus_neu > input$krankenhaus_aendern) {
+      db_updated <- rbind(rv$krankenhaus_db, temp)
+    } else {
+      index <- which(input$krankenhaus_plz == krankenhaus_db$PLZ)
+      # temporäre Annahme: ein Krankenhaus pro PLZ
+      if(length(index) > 1) {
+        # wahle immer den ersten vorschlag, vielleicht später verbessern
+        index <- min(which(input$krankenhaus_plz == krankenhaus_db$PLZ &
+                           grepl(tolower(input$krankenhaus_name), tolower(krankenhaus_db$Krankenhausname))))
+      }
+      print(index)
+      rv$krankenhaus_db[index, ] <- temp
+      db_updated <- rv$krankenhaus_db
     }
+    
     write.csv(db_updated, "./input_data/example_hospitals.csv")
     rv$krankenhaus_db <- db_updated
+    rv$updater <- !rv$updater
   })
   
   # output$welcome <- renderText({
