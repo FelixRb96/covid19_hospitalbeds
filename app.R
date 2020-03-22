@@ -527,7 +527,7 @@ server = function(input, output) {
                    style = list("font-weight" = "normal", padding = "3px 8px", "color" = covid_col),
                    textsize = "15px", direction = "auto")) %>%
 
-      addCircles(data = reactive_betten_db(), lat = ~ lat, lng = ~ lon, weight = 1, radius = ~(Anzahl.Betten)^(1/4)*2.5e4, fillOpacity = 0.1, color = betten_col, group = "Anzahl Betten", labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px", "color" = betten_col), textsize = "15px", direction = "auto")) 
+      addCircles(data = reactive_betten_db(), lat = ~ lat, lng = ~ lon, weight = 1, radius = ~(Anzahl.Betten)^(1/4)*1.5e4, fillOpacity = 0.1, color = betten_col, group = "Anzahl Betten", labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px", "color" = betten_col), textsize = "15px", direction = "auto")) 
 
   })
   
