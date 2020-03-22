@@ -27,6 +27,7 @@ Landing Page ist eine Karte auf der man eine Gegenüberstellung (momentan beispi
 * Deployment auf Server
 * UI refactoring 
 * Bei ausreichender Datenlage: predictive Modelling
+* Dashboard Tab für Bundesländer/ Landkreise
 
 ### Sonstiges:
 Fork von [diesem Repo](https://github.com/eparker12/nCoV_tracker)
