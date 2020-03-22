@@ -33,6 +33,7 @@ if(!require(RSQLite)) install.packages("RSQLite", repos = "http://cran.us.r-proj
 # set mapping colour for each outbreak
 covid_col = "#cc4c02"
 covid_other_col = "#662506"
+betten_col = "#0e3b82"
 
 # import data
 cv_cases = read.csv("input_data/coronavirus.csv")
@@ -116,9 +117,9 @@ basemap = leaflet(plot_map) %>%
   addTiles() %>% 
   addLayersControl(
     position = "bottomright",
-    overlayGroups = c("2019-COVID (active)", "2019-COVID (new)", "2019-COVID (cumulative)"),
+    overlayGroups = c("2019-COVID (active)", "2019-COVID (new)", "2019-COVID (cumulative)", "Anzahl Betten"),
     options = layersControlOptions(collapsed = FALSE)) %>% 
-  hideGroup(c("2019-COVID (new)", "2019-COVID (cumulative)"))  %>%
+  hideGroup(c("2019-COVID (new)", "2019-COVID (cumulative)", "Anzahl Betten"))  %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   #fitBounds(~-100,-50,~80,80) %>%
   addLegend("bottomright", pal = cv_pal, values = ~cv_large_countries$per100k,
@@ -427,6 +428,10 @@ server = function(input, output) {
   reactive_db = reactive({
     cv_cases %>% filter(date == input$plot_date)
   })
+
+  reactive_betten_db = reactive({
+      krankenhaus_db
+  })
   
   reactive_db_last24h = reactive({
     cv_cases %>% filter(date == input$plot_date & new_cases>0)
@@ -520,8 +525,14 @@ server = function(input, output) {
                 # label = sprintf("<strong>%s (active)</strong><br/>Confirmed cases: %g<br/>Cases per 100,000: %g<br/><i><small>Excludes individuals known to have<br/>recovered (%g) or died (%g).</small></i>", reactive_db()$country, reactive_db()$active_cases, reactive_db()$activeper100k, reactive_db()$recovered, reactive_db()$deaths) %>% lapply(htmltools::HTML),
                  labelOptions = labelOptions(
                    style = list("font-weight" = "normal", padding = "3px 8px", "color" = covid_col),
-                   textsize = "15px", direction = "auto")) 
-      
+                   textsize = "15px", direction = "auto")) # %>%
+
+      # addCircles(data = reactive_(), lat = ~ lat, lng = ~ lon, weight = 1, radius = ~(Anzahl.Betten)^(1/4)*2.5e4*penalty, 
+                 # fillOpacity = 0.1, color = betten_col, group = "Anzahl Betten",
+                 # labelOptions = labelOptions(
+                   # style = list("font-weight" = "normal", padding = "3px 8px", "color" = betten_col),
+                   # textsize = "15px", direction = "auto")) 
+
   })
   
   output$cumulative_plot <- renderPlot({
