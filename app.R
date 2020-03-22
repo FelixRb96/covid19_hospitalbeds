@@ -683,8 +683,8 @@ server = function(input, output) {
     
     else if(user_info()$permissions == "krankenhaus") {
       fluidRow(
-        textInput(inputId = "krankenhaus_name", label = "Name Ihres Krankenhauses", value = "Musterkrankenhaus"),
-        numericInput(inputId = "krankenhaus_plz", label = "PLZ Ihres Krankenhauses", value = 00000, min = 0, max = 99999, step = 1),
+        textInput(inputId = "krankenhaus_name_suche", label = "Name Ihres Krankenhauses", value = "Musterkrankenhaus"),
+        numericInput(inputId = "krankenhaus_plz_suche", label = "PLZ Ihres Krankenhauses", value = 00000, min = 0, max = 99999, step = 1),
         actionButton(inputId = "submit_plz", label = "Suchen")
       )
     }
@@ -692,7 +692,7 @@ server = function(input, output) {
   
   observeEvent(input$submit_plz, {
     temp <- rv$krankenhaus_db
-    subdata <- temp[temp$PLZ == input$krankenhaus_plz, ]
+    subdata <- temp[temp$PLZ == input$krankenhaus_plz_suche, ]
     # if(input$krankenhaus_name != "") {
     #   temp <- rv$krankenhaus_db %>% filter(input$Krankenhaus_plz == PLZ)
     #       # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x OR
@@ -754,6 +754,8 @@ server = function(input, output) {
     
     fluidRow(
       dateInput("datum", "Datum der Daten", value = Sys.Date(), format = "dd.mm.yyyy"),
+      textInput(inputId = "krankenhaus_name", label = "Name Ihres Krankenhauses", value = input$krankenhaus_name_suche),
+      numericInput(inputId = "krankenhaus_plz", label = "PLZ Ihres Krankenhauses", value = input$krankenhaus_plz_suche, min = 0, max = 99999, step = 1),
       numericInput("betten_normal", "Anzahl Betten normal", value = 100, min = 0, step = 1),
       numericInput("betten_intensiv", "Anzahl Betten intensiv", value = 10, min = 0, step = 1),
       numericInput("bestand_schutz", "Bestand Schutzausruestung", value = 1000, min = 0, step = 1),
