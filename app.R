@@ -256,6 +256,7 @@ user_base <- data_frame(
   name = c("Klinikum Reutlingen", "Tuebinger Universitaetsklinikum", "Besorgter Buerger")
 )
 
+krankenhaus_db <- read.csv("./input_data/example_hospitals.csv")
 
 # ----------------------------------------------------------------------- #
 #
@@ -630,8 +631,6 @@ server = function(input, output) {
     HTML('<h1>Bitte loggen Sie sich mit Ihrem Krankenhauszugang ein.</h1>')
   })
   
-  
-  
   output$user_table <- renderUI({
     # only show pre-login
     if(is_loggedin()) return(NULL)
@@ -670,7 +669,7 @@ server = function(input, output) {
     req(is_loggedin())
     
     if (user_info()$permissions == "krankenhaus") {
-      
+      krankenhaus_db
     } else if (user_info()$permissions == "standard") {
       matrix("Sie haben keinen Zugang! Zu unwichtig.", 1, 1)
     }
@@ -692,12 +691,12 @@ server = function(input, output) {
   
   subdata <- eventReactive(input$submit_plz, {
     if(input$krankenhaus_name != "") {
-          dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x OR
-                     krankenhaus_name LIKE %:y%',
-                     params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
+          # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x OR
+          #            krankenhaus_name LIKE %:y%',
+          #            params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
     } else {
-          dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x',
-                     params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
+          # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x',
+          #            params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
     }
     rv$krankenhaus_plz_checked <- TRUE
   })
