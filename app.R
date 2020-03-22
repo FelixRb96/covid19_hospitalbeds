@@ -1,6 +1,11 @@
-## COVID-2019 interactive mapping tool
-## Edward Parker, London School of Hygiene & Tropical Medicine (edward.parker@lshtm.ac.uk), February 2020
-
+## COVID-2019 interactive mapping tool with focus on visulaizing the beds situation using R shiny
+# 
+# authors: 
+#   Felix Reinbott
+#   Borui Zhu
+# 
+## fork from: Edward Parker, London School of Hygiene & Tropical Medicine (edward.parker@lshtm.ac.uk), February 2020
+# 
 ## includes code adapted from the following sources:
 # https://github.com/rstudio/shiny-examples/blob/master/087-crandash/
 # https://rviews.rstudio.com/2019/10/09/building-interactive-world-maps-in-shiny/
@@ -112,19 +117,19 @@ bins = c(0,1,10,20,50,100)
 cv_pal <- colorBin("Oranges", domain = cv_large_countries$per100k, bins = bins)
 plot_map <- worldcountry[worldcountry$id %in% cv_large_countries$alpha3, ]
 
-# creat cv base map 
+# create cv base map 
 basemap = leaflet(plot_map) %>% 
   addTiles() %>% 
   addLayersControl(
     position = "bottomright",
     overlayGroups = c("2019-COVID (active)", "2019-COVID (new)", "2019-COVID (cumulative)", "Anzahl Betten"),
     options = layersControlOptions(collapsed = FALSE)) %>% 
-  hideGroup(c("2019-COVID (new)", "2019-COVID (cumulative)", "Anzahl Betten"))  %>%
+  hideGroup(c("2019-COVID (new)", "2019-COVID (cumulative)"))  %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   #fitBounds(~-100,-50,~80,80) %>%
   addLegend("bottomright", pal = cv_pal, values = ~cv_large_countries$per100k,
             title = "<small>Active cases per 100,000</small>") %>%
-  fitBounds(0,-25,90,65) # alternative coordinates for closer zoom
+  fitBounds(5,45,15,60) # alternative coordinates for closer zoom
 
 # sum cv case counts by date
 cv_aggregated = aggregate(cv_cases$cases, by=list(Category=cv_cases$date), FUN=sum)
