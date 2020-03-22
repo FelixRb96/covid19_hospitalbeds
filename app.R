@@ -416,6 +416,8 @@ server = function(input, output) {
     cv_cases %>% filter(date == input$plot_date)
   })
 
+  # print(isolate(reactive_db()))
+
   reactive_betten_db = reactive({
       krankenhaus_db
   })
@@ -445,28 +447,28 @@ server = function(input, output) {
   })
   
   output$reactive_case_count <- renderText({
-    paste0(formatC(sum(reactive_db()$cases), big.mark=","), " cases")
+    paste0(formatC(sum(reactive_db()$cases), big.mark=","), " Faelle")
   })
   
   output$reactive_death_count <- renderText({
-    paste0(formatC(sum(reactive_db()$death), big.mark=","), " deaths")
+    paste0(formatC(sum(reactive_db()$death), big.mark=","), " Todesfaelle")
   })
   
   output$reactive_recovered_count <- renderText({
-    paste0(formatC(sum(reactive_db()$recovered), big.mark=","), " recovered")
+    paste0(formatC(sum(reactive_db()$recovered), big.mark=","), " Geheilte")
   })
   
   output$reactive_active_count <- renderText({
-    paste0(formatC(sum(reactive_db()$active_cases), big.mark=","), " active cases")
+    paste0(formatC(sum(reactive_db()$active_cases), big.mark=","), " Aktuell betroffene")
   })
   
   output$reactive_case_count_China <- renderText({
-    paste0("Mainland China: ", formatC(sum(subset(reactive_db(), country=="Mainland China")$cases), big.mark=",")," (",
+    paste0("China: ", formatC(sum(subset(reactive_db(), country=="Mainland China")$cases), big.mark=",")," (",
            formatC((cv_aggregated %>% filter(date == input$plot_date & region=="Mainland China"))$new, big.mark=",")," new)")
   })
   
   output$reactive_case_count_row <- renderText({
-    paste0("Other: ", formatC(sum(subset(reactive_db(), country!="Mainland China")$cases), big.mark=",")," (",
+    paste0("Nicht China ", formatC(sum(subset(reactive_db(), country!="Mainland China")$cases), big.mark=",")," (",
            formatC((cv_aggregated %>% filter(date == input$plot_date & region=="Other"))$new, big.mark=",")," new)")
   })
   
@@ -495,26 +497,28 @@ server = function(input, output) {
       
       addCircles(data = reactive_db_last24h(), lat = ~ latitude, lng = ~ longitude, weight = 1, radius = ~(new_cases)^(1/4)*2.5e4*penalty, 
                  fillOpacity = 0.1, color = covid_col, group = "2019-COVID (new)",
-                # label = sprintf("<strong>%s (past 24h)</strong><br/>Confirmed cases: %g<br/>Deaths: %d<br/>Recovered: %d<br/>Cases per 100,000: %g", reactive_db_last24h()$country, reactive_db_last24h()$new_cases, reactive_db_last24h()$new_deaths, reactive_db_last24h()$new_recovered, reactive_db_last24h()$newper100k) %>% lapply(htmltools::HTML),
+                 label = sprintf("<strong>%s (past 24h)</strong><br/>Confirmed cases: %g<br/>Deaths: %d<br/>Recovered: %d<br/>Cases per 100,000: %g", reactive_db_last24h()$country, reactive_db_last24h()$new_cases, reactive_db_last24h()$new_deaths, reactive_db_last24h()$new_recovered, reactive_db_last24h()$newper100k) %>% lapply(htmltools::HTML),
                  labelOptions = labelOptions(
                    style = list("font-weight" = "normal", padding = "3px 8px", "color" = covid_col),
                    textsize = "15px", direction = "auto")) %>%
       
       addCircles(data = reactive_db(), lat = ~ latitude, lng = ~ longitude, weight = 1, radius = ~(cases)^(1/4)*2.5e4*penalty, 
                  fillOpacity = 0.1, color = covid_col, group = "2019-COVID (cumulative)",
-                # label = sprintf("<strong>%s (cumulative)</strong><br/>Confirmed cases: %g<br/>Deaths: %d<br/>Recovered: %d<br/>Cases per 100,000: %g", reactive_db()$country, reactive_db()$cases, reactive_db()$deaths,reactive_db()$recovered, reactive_db()$per100k) %>% lapply(htmltools::HTML),
+                 label = sprintf("<strong>%s (cumulative)</strong><br/>Confirmed cases: %g<br/>Deaths: %d<br/>Recovered: %d<br/>Cases per 100,000: %g", reactive_db()$country, reactive_db()$cases, reactive_db()$deaths,reactive_db()$recovered, reactive_db()$per100k) %>% lapply(htmltools::HTML),
                  labelOptions = labelOptions(
                    style = list("font-weight" = "normal", padding = "3px 8px", "color" = covid_col),
                    textsize = "15px", direction = "auto")) %>%
 
       addCircles(data = reactive_db(), lat = ~ latitude, lng = ~ longitude, weight = 1, radius = ~(active_cases)^(1/4)*2.5e4*penalty, 
                  fillOpacity = 0.1, color = covid_col, group = "2019-COVID (active)",
-                # label = sprintf("<strong>%s (active)</strong><br/>Confirmed cases: %g<br/>Cases per 100,000: %g<br/><i><small>Excludes individuals known to have<br/>recovered (%g) or died (%g).</small></i>", reactive_db()$country, reactive_db()$active_cases, reactive_db()$activeper100k, reactive_db()$recovered, reactive_db()$deaths) %>% lapply(htmltools::HTML),
+                 label = sprintf("<strong>%s (active)</strong><br/>Confirmed cases: %g<br/>Cases per 100,000: %g<br/><i><small>Excludes individuals known to have<br/>recovered (%g) or died (%g).</small></i>", reactive_db()$country, reactive_db()$active_cases, reactive_db()$activeper100k, reactive_db()$recovered, reactive_db()$deaths) %>% lapply(htmltools::HTML),
                  labelOptions = labelOptions(
                    style = list("font-weight" = "normal", padding = "3px 8px", "color" = covid_col),
                    textsize = "15px", direction = "auto")) %>%
 
-      addCircles(data = reactive_betten_db(), lat = ~ lat, lng = ~ lon, weight = 1, radius = ~(Anzahl.Betten)^(1/4)*9.5e3, fillOpacity = 0.1, color = betten_col, group = "Anzahl Betten", labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px", "color" = betten_col), textsize = "15px", direction = "auto")) 
+      addCircles(data = reactive_betten_db(), lat = ~ lat, lng = ~ lon, weight = 1, radius = ~(Anzahl.Betten)^(1/4)*9.5e3, fillOpacity = 0.1, color = betten_col, group = "Anzahl Betten", 
+                 # label = sprintf("<strong> Betten</strong><br/>Anzahl Betten: %g<br/>Intensivbetten: %g<br/>", reactive_betten_db()$Anzahl.Betten, reactive_betten_db()$Intensivbetten) %>% lapply(htmltools:HTML), 
+                 labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px", "color" = betten_col), textsize = "15px", direction = "auto")) 
 
   })
   
