@@ -274,7 +274,7 @@ krankenhaus_db <- read.csv("./input_data/example_hospitals.csv")
 
 # create Shiny ui
 ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
-                 "COVID-19 tracker", id="nav",
+                 "COVID-19 e-governance", id="nav",
                  
                  tabPanel("Krankenhausbetten Deutschland",
                           div(class="outer",
