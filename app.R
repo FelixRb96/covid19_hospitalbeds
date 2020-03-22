@@ -614,7 +614,8 @@ server = function(input, output) {
   logout_init <- callModule(shinyauthr::logout, "logout", reactive(credentials()$user_auth))
   
   is_loggedin <- reactive({credentials()$user_auth})
-  rv <- reactiveValues(krankenhaus_plz_checked = FALSE)
+  rv <- reactiveValues(krankenhaus_plz_checked = FALSE, input_request_neu = FALSE, input_request_aendern = FALSE,
+                       input_submit = FALSE)
   
   observe({
     if(credentials()$user_auth) {
@@ -701,14 +702,43 @@ server = function(input, output) {
     rv$krankenhaus_plz_checked <- TRUE
   })
   
-  output$krankenhaus_optionen <- renderUI({
-    if(!rv$krankenhaus_plz_checked) return(NULL)
+  output$krankenhaus_option_neu <- renderUI({
+    if(!rv$krankenhaus_plz_checked | rv$input_request_aendern) return(NULL)
     
     fluidRow(
       actionButton("krankenhaus_neu", "Neuer Eintrag"),
-      actionButton("krankenhaus_aendern", "Eintrag updaten")
+      # rv$input_isnew <- ifelse()
+    )
+    rv$input_request_new <- TRUE
+  })
+  
+  output$krankenhaus_option_aendern <- renderUI({
+    if(!rv$krankenhaus_plz_checked | rv$input_request_neu) return(NULL)
+    
+    fluidRow(
+      actionButton("krankenhaus_aendern", "Eintrag aendern"),
+      # rv$input_isnew <- ifelse()
+    )
+    rv$input_request_aendern <- TRUE
+  })
+
+  output$datenfeld_neu <- renderUI({
+    if(!rv$input_request_neu & !rv$input_request_aendern) return(NULL)
+    
+    fluidRow(
+      dateInput("datum", "Datum der Daten", value = Sys.Date(), format = "dd.mm.yyyy"),
+      numericInput("betten_normal", "Anzahl Betten normal", value = 100, min = 0, step = 1),
+      numericInput("betten_intensiv", "Anzahl Betten intensiv", value = 10, min = 0, step = 1),
+      numericInput("bestand_schutz", "Bestand Schutzausruestung", value = 1000, min = 0, step = 1),
+      actionButton("input_submit", "Abschicken")
     )
   })
+  
+  # observeEvent(input$input_submit, {
+  #   if(rv$input_request_neu) {
+  #     db <- rbind(db, )
+  #   }
+  # })
   
   
   
