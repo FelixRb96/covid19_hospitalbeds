@@ -14,7 +14,19 @@ R # jump to R console
 > runApp("covid19_hospitalbeds")
 ```
 
-Das Dashboard sollte sich atuomatisch im Standardbrowser öffnen, an sonsten den Link aus der R KOnsole kopieren.
+Das Dashboard sollte sich atuomatisch im Standardbrowser öffnen, an sonsten den Link aus der R Konsole kopieren.
+
+### Struktur
+
+Landing Page ist eine Karte auf der man eine Gegenüberstellung (momentan beispielhafter) Bettenkapazitäten mit Zahlen des Coronavirus vergleichen kann. Nutzende Krankenhäuser können die Daten unter dem Daten hinzugügen Tab eingeben. 
+
+### TODO's und Ausblick
+
+* Marker für die Bettenzahlen am jeweiligen Standort
+* richtige Daten für die Betten bekommen
+* Deployment auf Server
+* UI refactoring 
+* Bei ausreichender Datenlage: predictive Modelling
 
 ### Sonstiges:
 Fork von [diesem Repo](https://github.com/eparker12/nCoV_tracker)
