@@ -368,7 +368,8 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                              uiOutput("nach_login"),
                              uiOutput("krankenhaus_id_eingabe"),
                              uiOutput("krankenhaus_suchvorschlag"),
-                             uiOutput("krankenhaus_optionen"),
+                             uiOutput("krankenhaus_option_neu"),
+                             uiOutput("krankenhaus_option_aendern"),
                              HTML('<div data-iframe-height></div>')
                            ),
                               
@@ -622,8 +623,10 @@ server = function(input, output) {
   logout_init <- callModule(shinyauthr::logout, "logout", reactive(credentials()$user_auth))
   
   is_loggedin <- reactive({credentials()$user_auth})
-  rv <- reactiveValues(krankenhaus_plz_checked = FALSE, input_request_neu = FALSE, input_request_aendern = FALSE,
-                       input_submit = FALSE, krankenhaus_db = krankenhaus_db)
+  rv <- reactiveValues(krankenhaus_db = krankenhaus_db, krankenhaus_plz_checked = FALSE,
+                       subdata = NULL,
+                       input_request_neu = FALSE, input_request_aendern = FALSE,
+                       input_submit = FALSE)
   
   observe({
     if(credentials()$user_auth) {
@@ -654,19 +657,16 @@ server = function(input, output) {
   output$nach_login <- renderUI({
     req(credentials()$user_auth)
     
-    is_krankenhaus <- user_info()$permissions %in% c('krankenhaus')
-    
     fluidRow(
       column(
         width = 12,
         tags$h2(glue("Willkommen!\n
                      Sie sind angemeldet als: {user_info()$name}.
                      Ihre Zugangskategorie ist: {user_info()$permissions}.")),
-        box(width = NULL, status = "primary",
-            title = ifelse(is_krankenhaus, "Daten hochladen:", "Fehler"),
-            user_data(),
-            DT::renderDT(user_data(), options = list(scrollX = TRUE))
-        )
+        # box(width = NULL, status = "primary",
+        #     title = ifelse(user_info()$permissions == "krankenhaus", "Daten hochladen:", "Fehler: Keine Berechtigung"),
+        #     DT::renderDT(user_data(), options = list(scrollX = TRUE))
+        # )
       )
     )
   })
@@ -699,29 +699,34 @@ server = function(input, output) {
     }
   })
   
-  subdata <- eventReactive(input$submit_plz, {
-    if(input$krankenhaus_name != "") {
-      temp <- krankenhaus_db() %>% filter(input$Krankenhaus_plz == krankenhaus_db$PLZ)
-          # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x OR
-          #            krankenhaus_name LIKE %:y%',
-          #            params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
-    } else {
-      temp <- krankenhaus_db() %>% filter(input$Krankenhaus_plz == krankenhaus_db$PLZ |
-                                    grepl(tolower(input$krankenhaus_name), tolower(krankenhaus_db$Krankenhausname)))
-          # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x',
-          #            params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
-    }
+  observeEvent(input$submit_plz, {
+    temp <- rv$krankenhaus_db
+    subdata <- temp[temp$PLZ == input$krankenhaus_plz, ]
+    # if(input$krankenhaus_name != "") {
+    #   temp <- rv$krankenhaus_db %>% filter(input$Krankenhaus_plz == PLZ)
+    #       # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x OR
+    #       #            krankenhaus_name LIKE %:y%',
+    #       #            params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
+    # } else {
+    #   temp <- rv$krankenhaus_db %>% filter(input$Krankenhaus_plz == PLZ |
+    #                                 grepl(input$krankenhaus_name, Krankenhausname))
+    #       # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x',
+    #       #            params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
+    # }
     rv$krankenhaus_plz_checked <- TRUE
-    return(temp)
+    if(nrow(subdata) == 0) rv$subdata <- data.frame("kein passender Eintrag gefunden")
+    else rv$subdata <- subdata
   })
   
-  output$krankenhaus_suchvorschlag <- renderDataTable({
+  output$krankenhaus_suchvorschlag <- renderUI({
+    req(credentials()$user_auth)
+    
     if(!rv$krankenhaus_plz_checked) return(NULL)
     
     fluidRow(
       box(width = NULL, status = "primary",
-          title = ifelse(is_krankenhaus, "Daten hochladen:", "Fehler"),
-          DT::renderDT(subdata(), options = list(scrollX = TRUE))
+          title = ifelse(user_info()$permissions == "krankenhaus", "Gefunden:", "Fehler: Keine Berechtigung"),
+          DT::renderDT(rv$subdata, options = list(scrollX = TRUE))
       )
     )
   })
@@ -758,19 +763,19 @@ server = function(input, output) {
     )
   })
   
-  rv$krankenhaus_db <- eventReactive(input$input_submit, {
+  observeEvent(input$input_submit, {
     if(rv$input_request_neu) {
       db_updated <- rbind(rv$krankenhaus_db, as.data.frame(list(input$krankenhaus_name, 99, input$krankenhaus_plz, input$betten_normal,
                            input$betten_intensiv, input$bestand_schutz, 0, 0)))
     } else if(rv$input$request_aendern) {
       index <- which(input$krankenhaus_plz == db$PLZ && grepl(input$krankenhaus_name, tolower(db$Krankenhausname)))
-      index <- index[1] # wahle immer den ersten vorschlag, vielleciht später verbessern
+      index <- index[1] # wahle immer den ersten vorschlag, vielleicht später verbessern
       db_updated <- db
       db_updated[index, ] <- rbind(rv$krankenhaus_db, as.data.frame(list(input$krankenhaus_name, 99, input$krankenhaus_plz, input$betten_normal,
                                    input$betten_intensiv, input$bestand_schutz, 0, 0)))
     }
     write.csv(db_updated, "./input_data/example_hospitals.csv")
-    db_updated
+    rv$krankenhaus_db <- db_updated
   })
   
   # output$welcome <- renderText({
