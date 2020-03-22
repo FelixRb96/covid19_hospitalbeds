@@ -365,6 +365,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                              uiOutput("user_table"),
                              uiOutput("nach_login"),
                              uiOutput("krankenhaus_id_eingabe"),
+                             uiOutput("krankenhaus_optionen"),
                              HTML('<div data-iframe-height></div>')
                            ),
                               
@@ -682,23 +683,35 @@ server = function(input, output) {
     
     else if(user_info()$permissions == "krankenhaus") {
       fluidRow(
-        textInput(inputId = "krankenhaus_name", label = "Name Ihres Krankenhauses"),
-        numericInput(inputId = "krankenhaus_plz", label = "PLZ Ihres Krankenhauses", min = 0, max = 99999, step = 1),
+        textInput(inputId = "krankenhaus_name", label = "Name Ihres Krankenhauses", value = "Musterkrankenhaus"),
+        numericInput(inputId = "krankenhaus_plz", label = "PLZ Ihres Krankenhauses", value = 00000, min = 0, max = 99999, step = 1),
         actionButton(inputId = "submit_plz", label = "Suchen")
       )
     }
   })
   
   subdata <- eventReactive(input$submit_plz, {
-    # if(input$krankenhaus_name != "") {
-    #       dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x OR
-    #                  krankenhaus_name LIKE %:y%',s
-    #                  params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
-    #     } else {
-    #       dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x',
-    #                  params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
-    #     }
+    if(input$krankenhaus_name != "") {
+          dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x OR
+                     krankenhaus_name LIKE %:y%',
+                     params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
+    } else {
+          dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x',
+                     params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
+    }
+    rv$krankenhaus_plz_checked <- TRUE
   })
+  
+  output$krankenhaus_optionen <- renderUI({
+    if(!rv$krankenhaus_plz_checked) return(NULL)
+    
+    fluidRow(
+      actionButton("krankenhaus_neu", "Neuer Eintrag"),
+      actionButton("krankenhaus_aendern", "Eintrag updaten")
+    )
+  })
+  
+  
   
   # output$welcome <- renderText({
   #   req(credentials()$user_auth)
