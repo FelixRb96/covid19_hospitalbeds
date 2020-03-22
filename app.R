@@ -603,7 +603,7 @@ server = function(input, output) {
   })
   
   ## ---------------- ##
-  ## Log-in ##
+  ## Unser Schrott    ##
   
   credentials <- callModule(shinyauthr::login, "login", 
                             data = user_base,
@@ -657,6 +657,7 @@ server = function(input, output) {
                      Ihre Zugangskategorie ist: {user_info()$permissions}.")),
         box(width = NULL, status = "primary",
             title = ifelse(is_krankenhaus, "Daten hochladen:", "Fehler"),
+            user_data(),
             DT::renderDT(user_data(), options = list(scrollX = TRUE))
         )
       )
@@ -753,13 +754,13 @@ server = function(input, output) {
   rv$krankenhaus_db <- eventReactive(input$input_submit, {
     if(rv$input_request_neu) {
       db_updated <- rbind(rv$krankenhaus_db, as.data.frame(list(input$krankenhaus_name, 99, input$krankenhaus_plz, input$betten_normal,
-                           input$betten_intensiv, input$bestand_schutz)))
+                           input$betten_intensiv, input$bestand_schutz, 0, 0)))
     } else if(rv$input$request_aendern) {
       index <- which(input$krankenhaus_plz == db$PLZ && grepl(input$krankenhaus_name, tolower(db$Krankenhausname)))
       index <- index[1] # wahle immer den ersten vorschlag, vielleciht später verbessern
       db_updated <- db
       db_updated[index, ] <- rbind(rv$krankenhaus_db, as.data.frame(list(input$krankenhaus_name, 99, input$krankenhaus_plz, input$betten_normal,
-                                   input$betten_intensiv, input$bestand_schutz)))
+                                   input$betten_intensiv, input$bestand_schutz, 0, 0)))
     }
     write.csv(db_updated, "./input_data/example_hospitals.csv")
     db_updated
