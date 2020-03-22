@@ -366,6 +366,7 @@ ui <- navbarPage(theme = shinytheme("flatly"), collapsible = TRUE,
                              uiOutput("user_table"),
                              uiOutput("nach_login"),
                              uiOutput("krankenhaus_id_eingabe"),
+                             uiOutput("krankenhaus_suchvorschlag"),
                              uiOutput("krankenhaus_optionen"),
                              HTML('<div data-iframe-height></div>')
                            ),
@@ -615,7 +616,7 @@ server = function(input, output) {
   
   is_loggedin <- reactive({credentials()$user_auth})
   rv <- reactiveValues(krankenhaus_plz_checked = FALSE, input_request_neu = FALSE, input_request_aendern = FALSE,
-                       input_submit = FALSE)
+                       input_submit = FALSE, krankenhaus_db = krankenhaus_db)
   
   observe({
     if(credentials()$user_auth) {
@@ -670,7 +671,7 @@ server = function(input, output) {
     req(is_loggedin())
     
     if (user_info()$permissions == "krankenhaus") {
-      krankenhaus_db
+      rv$krankenhaus_db
     } else if (user_info()$permissions == "standard") {
       matrix("Sie haben keinen Zugang! Zu unwichtig.", 1, 1)
     }
@@ -692,14 +693,29 @@ server = function(input, output) {
   
   subdata <- eventReactive(input$submit_plz, {
     if(input$krankenhaus_name != "") {
+      temp <- krankenhaus_db() %>% filter(input$Krankenhaus_plz == krankenhaus_db$PLZ)
           # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x OR
           #            krankenhaus_name LIKE %:y%',
           #            params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
     } else {
+      temp <- krankenhaus_db() %>% filter(input$Krankenhaus_plz == krankenhaus_db$PLZ |
+                                    grepl(tolower(input$krankenhaus_name), tolower(krankenhaus_db$Krankenhausname)))
           # dbGetQuery(secret, 'SELECT krankenhaus_name, krankenhaus_plz FROM krankenhaus WHERE krankenhaus_plz = :x',
           #            params = list(x = input$krankenhaus$plz, y = tolower(input$krankenhaus_name)))
     }
     rv$krankenhaus_plz_checked <- TRUE
+    return(temp)
+  })
+  
+  output$krankenhaus_suchvorschlag <- renderDataTable({
+    if(!rv$krankenhaus_plz_checked) return(NULL)
+    
+    fluidRow(
+      box(width = NULL, status = "primary",
+          title = ifelse(is_krankenhaus, "Daten hochladen:", "Fehler"),
+          DT::renderDT(subdata(), options = list(scrollX = TRUE))
+      )
+    )
   })
   
   output$krankenhaus_option_neu <- renderUI({
@@ -734,13 +750,20 @@ server = function(input, output) {
     )
   })
   
-  # observeEvent(input$input_submit, {
-  #   if(rv$input_request_neu) {
-  #     db <- rbind(db, )
-  #   }
-  # })
-  
-  
+  rv$krankenhaus_db <- eventReactive(input$input_submit, {
+    if(rv$input_request_neu) {
+      db_updated <- rbind(rv$krankenhaus_db, as.data.frame(list(input$krankenhaus_name, 99, input$krankenhaus_plz, input$betten_normal,
+                           input$betten_intensiv, input$bestand_schutz)))
+    } else if(rv$input$request_aendern) {
+      index <- which(input$krankenhaus_plz == db$PLZ && grepl(input$krankenhaus_name, tolower(db$Krankenhausname)))
+      index <- index[1] # wahle immer den ersten vorschlag, vielleciht später verbessern
+      db_updated <- db
+      db_updated[index, ] <- rbind(rv$krankenhaus_db, as.data.frame(list(input$krankenhaus_name, 99, input$krankenhaus_plz, input$betten_normal,
+                                   input$betten_intensiv, input$bestand_schutz)))
+    }
+    write.csv(db_updated, "./input_data/example_hospitals.csv")
+    db_updated
+  })
   
   # output$welcome <- renderText({
   #   req(credentials()$user_auth)
